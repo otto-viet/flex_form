@@ -5,6 +5,7 @@ import 'package:flex_form/src/form_view_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:collection/collection.dart';
 
 import 'form_field_id.dart';
 import 'form_field_validation.dart';
@@ -23,7 +24,6 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     required this.inputDataMapper,
     this.requiredLoad = false,
     this.requiresChangesOnSubmission = true,
-    this.formTitle,
   }) : super(initialState.copyWith(isContentLoaded: !requiredLoad)) {
     on<FormEvent>(_onEvent, transformer: sequential());
     _initializeDataInputMapWithMapData(dataProvider?.data);
@@ -34,7 +34,6 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
   final FormDataProvider? dataProvider;
   final FormValidationProvider<FormDataEntity> validationProvider;
   final FormInputDataMapper<FormDataEntity> inputDataMapper;
-  final String? formTitle;
 
   /// The client-specific entity assigned when a form is submitted and its data
   /// is stored in this entity.
@@ -504,7 +503,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
   ) async {
     if (state.currentActionEvent != FormAction.submissionInProgress) {
       // Validate the field that has just been exited.
-      final Map<FormFieldId, InputViewModel> newInputMap =
+      Map<FormFieldId, InputViewModel> newInputMap =
           _createInputMapWithFieldValidation(
         fieldId,
         inputValue.trim(),
@@ -572,27 +571,22 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
 
         // Check for null here because some forms don't provide the validation
         // above.
-        if (formValidationMap != null) {
-          // Not all fields are validated by the form validator. Therefore,
-          // we must only check for the keys that are available. E.g. The
-          // SignUp form validator only returns the validation for the
-          // email field, thus only the FormFieldId associated with the email
-          // is returned.
-          for (final FormFieldId element in formValidationMap.keys) {
-            // If the [FormValidator] detects that the current field has an
-            // error, override the "canSubmit" result by the
-            // [FormFieldValidationProvider]
-            if (formValidationMap[element]?.isNotEmpty ?? false) {
-              canSubmit = false;
-            }
+        if (formValidationMap != null && formValidationMap.isNotEmpty) {
+          newInputMap =
+              _updateInputMapWithValidationMap(newInputMap, formValidationMap);
+          final hasValidationError = formValidationMap.values.firstWhereOrNull(
+                (element) => element.isNotEmpty,
+              ) !=
+              null;
 
-            newInputMap[element] = newInputMap[element]!.copyWith(
-              errorText: formValidationMap[element],
-            );
-          }
-
-          if (canSubmit && state.isFormValid) {
-            _resetFormValidationInfo(newInputMap);
+          if (hasValidationError) {
+            canSubmit = false;
+          } else {
+            final newInputEntity =
+                inputDataMapper.toFormProviderEntity(newInputData)!;
+            final isFormValid =
+                await validationProvider.isValid(newInputEntity);
+            canSubmit = isFormValid;
           }
         } else {
           final bool hasPreviousError = _checkForCurrentFieldError(newInputMap);
@@ -612,7 +606,8 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
           ),
         );
       } else {
-        // Because the form is not dirty and the user has decide to not provide
+        // TODO(quan): BUG - Investigate if this is still needed
+        /*// Because the form is not dirty and the user has decide to not provide
         // any input for the exited field. We want to make sure that the field
         // should not have any error. Also all other fields that might have
         // an error should be cleared as well. (i.e. It's a new form and there
@@ -620,7 +615,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         for (final FormFieldId element in newInputMap.keys) {
           newInputMap[element] =
               newInputMap[element]!.copyWith(errorText: null);
-        }
+        }*/
 
         emitter(
           state.copyWith(
@@ -743,7 +738,8 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
   }
 
   /// Clears all errorText in each form input
-  Map<FormFieldId, InputViewModel> _resetFormValidationInfo(
+  /// TODO(quan): Verify before removing.
+  /*Map<FormFieldId, InputViewModel> _resetFormValidationInfo(
     Map<FormFieldId, InputViewModel> inputMap,
   ) {
     for (final FormFieldId fieldId in inputMap.keys) {
@@ -754,7 +750,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
 
     // Create a new inputMap to update the state.data
     return Map<FormFieldId, InputViewModel>.from(inputMap);
-  }
+  }*/
 
   /// Creates a new input map with the result of the field's validation.
   Map<FormFieldId, InputViewModel> _createInputMapWithFieldValidation(
@@ -828,10 +824,19 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     return newInputMap;
   }
 
+  /// Update each field in the [newInputMap] with the validation information
+  /// included in the [validationMap].
   Map<FormFieldId, InputViewModel> _updateInputMapWithValidationMap(
     Map<FormFieldId, InputViewModel> newInputMap,
     Map<FormFieldId, String?> validationMap,
   ) {
+    // Validation results are specific to each FormValidationProvider. This
+    // means only the fields which have validation information will be included
+    // in the result validation map. Thus, we can only check for the keys that
+    // are available. For example, The Change Password form validation provider
+    // returns the validation results for the New Password fields because the
+    // validator only checks to make sure the New Password fields have the same
+    // values.
     for (final FormFieldId fieldId in validationMap.keys) {
       // All InputViewModel types in the union have an "errorText"
       // property, this copy should work.

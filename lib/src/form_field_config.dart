@@ -59,7 +59,9 @@ class FormFieldConfig extends Equatable {
 
   /// When true, the form's custom validator will call the validate() function
   /// to validate the form and set the form's validation errorText.
-  /// NOTE: This setting does not have an effect on the TextInputViewModel
+  ///
+  /// NOTE: This should be set when the form has custom validation. However,
+  /// This setting does not have an effect on the TextInputViewModel
   /// because the form will be re-validated anyway when the input looses its
   /// focus such as when the user leaves the input to focus on another input.
   final bool validateFormOnChange;

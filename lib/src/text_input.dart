@@ -108,7 +108,7 @@ class TextInput extends StatelessWidget {
               validator: validator,
               cursorColor: theme.cursorColor,
               minLines: theme.minLines,
-              maxLines: theme.maxLines,
+              maxLines: viewModel.maxLines,
               autovalidateMode: viewModel.autoValidateMode,
               autofocus: viewModel.isAutoFocused,
               cursorHeight: theme.cursorHeight,

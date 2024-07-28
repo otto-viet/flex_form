@@ -49,7 +49,7 @@ class FormComponent extends StatefulWidget {
     super.key,
     required this.bloc,
     this.theme,
-    this.inputBuilder,
+    this.textInputBuilder,
     this.dataBuilder,
     this.onSuccessSubmission,
     this.onErrorSubmission,
@@ -58,7 +58,7 @@ class FormComponent extends StatefulWidget {
   // NOTE: Let the component handle the creation and disposal of this bloc
   final FormBloc bloc;
   final FormComponentThemeData? theme;
-  final FormInputBuilder? inputBuilder;
+  final FormInputBuilder? textInputBuilder;
   final FormDataBuilder? dataBuilder;
   final ValueChanged<dynamic>? onSuccessSubmission;
   final VoidCallback? onErrorSubmission;
@@ -152,8 +152,8 @@ class _FormComponentState extends State<FormComponent> {
     return BlocConsumer<FormBloc, FormBlocState>(
       bloc: widget.bloc,
       builder: (BuildContext context, FormBlocState state) {
-        if (widget.inputBuilder != null) {
-          return widget.inputBuilder!(
+        if (widget.textInputBuilder != null) {
+          return widget.textInputBuilder!(
             context: context,
             textInputs: _buildInputList(state.data),
             buttonText: state.data.buttonText,
@@ -261,6 +261,7 @@ class _FormComponentState extends State<FormComponent> {
                 return TextInput(
                   viewModel: inputViewModel,
                   theme: theme.textInputTheme,
+                  focusNode: _inputFocusNodeMap[inputFieldId],
                   controller: _inputTextControllerMap[inputFieldId],
                   onChange: (dynamic value) =>
                       _handleInputChange(inputFieldId, value),

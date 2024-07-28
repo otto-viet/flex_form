@@ -11,6 +11,5 @@ class ChangePasswordFormDataEntity extends FormDataEntity {
   final String? newPassword;
   final String? confirmNewPassword;
   @override
-  // TODO: implement props
-  List<Object?> get props => throw UnimplementedError();
+  List<Object?> get props => [oldPassword, newPassword, confirmNewPassword];
 }

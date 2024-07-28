@@ -1,9 +1,9 @@
 import 'package:flex_form/flex_form.dart';
-import 'package:flex_form_demo/change_password_validation_provider.dart';
+import 'package:flex_form_demo/features/change_password/data/change_password_validation_provider.dart';
 import 'package:flutter/material.dart';
 
-import 'change_password_data_provider.dart';
-import 'change_password_input_data_mapper.dart';
+import '../data/change_password_data_provider.dart';
+import '../data/change_password_input_data_mapper.dart';
 
 class ChangePasswordFormBloc extends FormBloc {
   ChangePasswordFormBloc._(
@@ -22,20 +22,26 @@ class ChangePasswordFormBloc extends FormBloc {
         FormFieldId.fd0,
         FormFieldConfig(
           requiredInputMessage: 'Old password is required',
+          validateFormOnChange: true,
         ),
       ),
       const MapEntry<FormFieldId, FormFieldConfig>(
         FormFieldId.fd1,
         FormFieldConfig(
           requiredInputMessage: 'Enter a new password',
+          invalidInputMessage:
+              'New Password must be the same as Confirm Password',
           minChars: 8,
-          validateOnExitingOnly: true,
+          validateFormOnChange: true,
         ),
       ),
       const MapEntry<FormFieldId, FormFieldConfig>(
         FormFieldId.fd2,
         FormFieldConfig(
           requiredInputMessage: 'Confirm your new password',
+          invalidInputMessage:
+              'Confirm Password must be the same as New Password',
+          validateFormOnChange: true,
         ),
       ),
     ]);
@@ -49,9 +55,9 @@ class ChangePasswordFormBloc extends FormBloc {
         inputMap: Map<FormFieldId, InputViewModel>.fromEntries(
           <MapEntry<FormFieldId, InputViewModel>>[
             const MapEntry<FormFieldId, InputViewModel>(
-              FormFieldId.fd1,
+              FormFieldId.fd0,
               InputViewModel.text(
-                id: FormFieldId.fd1,
+                id: FormFieldId.fd0,
                 labelText: '${'Old Password'}*',
                 hintText: '${'Old Password'}*',
                 // Can be changed to 'go' by the bloc  to indicate the form's
@@ -59,6 +65,9 @@ class ChangePasswordFormBloc extends FormBloc {
                 textInputAction: TextInputAction.next,
                 errorText: null,
                 textCapitalization: TextCapitalization.words,
+                obscuringCharacter: '*',
+                isInputObscured: true,
+                maxLines: 1,
               ),
             ),
             const MapEntry<FormFieldId, InputViewModel>(
@@ -72,12 +81,15 @@ class ChangePasswordFormBloc extends FormBloc {
                 textInputAction: TextInputAction.next,
                 errorText: null,
                 textCapitalization: TextCapitalization.words,
+                obscuringCharacter: '*',
+                isInputObscured: true,
+                maxLines: 1,
               ),
             ),
             const MapEntry<FormFieldId, InputViewModel>(
-              FormFieldId.fd1,
+              FormFieldId.fd2,
               InputViewModel.text(
-                id: FormFieldId.fd1,
+                id: FormFieldId.fd2,
                 labelText: '${'Confirm Password'}*',
                 hintText: '${'Confirm Password'}*',
                 // Can be changed to 'go' by the bloc  to indicate the form's
@@ -85,6 +97,9 @@ class ChangePasswordFormBloc extends FormBloc {
                 textInputAction: TextInputAction.next,
                 errorText: null,
                 textCapitalization: TextCapitalization.words,
+                obscuringCharacter: '*',
+                isInputObscured: true,
+                maxLines: 1,
               ),
             ),
           ],

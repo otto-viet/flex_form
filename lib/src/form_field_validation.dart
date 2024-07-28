@@ -109,7 +109,7 @@ String? getValidationMessage(
     case FormFieldValidation.fieldTooLong:
       return 'Input can not exceed ${validationConfig.maxChars} characters';
     case FormFieldValidation.fieldTooShort:
-      return 'Input can be at least ${validationConfig.minChars} characters long';
+      return 'Input must be at least ${validationConfig.minChars} characters long';
     case FormFieldValidation.invalidInput:
       return validationConfig.invalidInputMessage ?? 'Input is invalid';
     case FormFieldValidation.inputExisted:
