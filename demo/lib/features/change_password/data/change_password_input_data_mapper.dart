@@ -2,7 +2,7 @@ import 'package:flex_form/flex_form.dart';
 import 'package:flex_form_demo/features/change_password/data/change_password_form_data_entity.dart';
 
 class ChangePasswordInputDataMapper
-    extends FormInputDataMapper<ChangePasswordFormDataEntity> {
+    implements FormInputDataMapper<ChangePasswordFormDataEntity> {
   @override
   FormDataEntity? toFormProviderEntity(Map<FormFieldId, dynamic>? inputMap) {
     return ChangePasswordFormDataEntity(

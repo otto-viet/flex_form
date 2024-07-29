@@ -19,9 +19,9 @@ part 'form_bloc.freezed.dart';
 class FormBloc extends Bloc<FormEvent, FormBlocState> {
   FormBloc(
     FormBlocState initialState, {
-    this.dataProvider,
     required this.validationProvider,
     required this.inputDataMapper,
+    this.dataProvider,
     this.requiredLoad = false,
     this.requiresChangesOnSubmission = true,
   }) : super(initialState.copyWith(isContentLoaded: !requiredLoad)) {
