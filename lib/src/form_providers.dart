@@ -1,3 +1,5 @@
+import 'package:flex_form/flex_form.dart';
+
 import 'form_field_id.dart';
 import 'form_input_data_mapper.dart';
 
@@ -17,11 +19,30 @@ abstract class FormDataProvider {
 }
 
 abstract class FormValidationProvider<T extends FormDataEntity> {
-  bool isDirty(T? original, T? current);
+  FormValidationProvider({
+    required this.inputConfigMap,
+    required this.inputDataMapper,
+  });
+  final Map<FormFieldId, FormFieldConfig> inputConfigMap;
+  final FormInputDataMapper<FormDataEntity> inputDataMapper;
+  bool isDirty(T? original, T? current) {
+    return original != current;
+  }
 
   /// Indicates if the current state of the form is valid. Typically this is
   /// called only when the form is realized to be dirty.
-  Future<bool> isValid(T current);
+  Future<bool> isValid(T current) async {
+    final inputMap = inputDataMapper.toInput(current);
+    bool result = true;
+    for (var formFieldId in inputMap.keys) {
+      result = result &&
+          validateField(
+                  inputConfigMap[formFieldId], inputConfigMap[formFieldId]) ==
+              FormFieldValidation.valid;
+    }
+
+    return result;
+  }
 
   /// Validate the form as a result of changes based on the
   /// [currentValidatedField].
@@ -32,7 +53,9 @@ abstract class FormValidationProvider<T extends FormDataEntity> {
     T current, {
     FormFieldId? currentValidatedField,
     T? original,
-  });
+  }) async {
+    return null;
+  }
 
   /// Validate the form again before submitting it.
   /// This is to ensure that if a form wants to run any additional validation
@@ -43,5 +66,7 @@ abstract class FormValidationProvider<T extends FormDataEntity> {
   Future<Map<FormFieldId, String>?> validateUponSubmission(
     T entity, {
     T? original,
-  });
+  }) async {
+    return await validate(entity, original: original);
+  }
 }

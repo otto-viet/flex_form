@@ -2,20 +2,18 @@ import 'package:flex_form/flex_form.dart';
 import 'package:flex_form_demo/features/change_password/data/change_password_validation_provider.dart';
 import 'package:flutter/material.dart';
 
-import '../data/change_password_data_provider.dart';
 import '../data/change_password_input_data_mapper.dart';
 
 class ChangePasswordFormBloc extends FormBloc {
   ChangePasswordFormBloc._(
     super.initialState, {
-    required super.validationProvider,
+    required super.inputConfigMap,
     required super.inputDataMapper,
-    super.dataProvider,
+    super.formValidationProvider,
   });
   factory ChangePasswordFormBloc() {
     final ChangePasswordInputDataMapper inputDataMapper =
         ChangePasswordInputDataMapper();
-
     final Map<FormFieldId, FormFieldConfig> inputConfigMap = Map<FormFieldId,
         FormFieldConfig>.fromEntries(<MapEntry<FormFieldId, FormFieldConfig>>[
       const MapEntry<FormFieldId, FormFieldConfig>(
@@ -45,7 +43,10 @@ class ChangePasswordFormBloc extends FormBloc {
         ),
       ),
     ]);
-
+    final validationProvider = ChangePasswordValidationProvider(
+      inputConfigMap: inputConfigMap,
+      inputDataMapper: inputDataMapper,
+    );
     final FormBlocState initialState = FormBlocState(
       inputConfigMap: inputConfigMap,
       data: const FormVM().copyWith(
@@ -106,22 +107,12 @@ class ChangePasswordFormBloc extends FormBloc {
         ),
       ),
     );
-    final Map<FormFieldId, dynamic> formData =
-        Map<FormFieldId, String>.fromEntries(
-            FormFieldId.values.take(3).map((FormFieldId e) => MapEntry(e, '')));
-    final validationProvider = ChangePasswordValidationProvider(
-        oldPasswordFieldConfig: inputConfigMap[FormFieldId.fd0]!,
-        newPasswordFieldConfig: inputConfigMap[FormFieldId.fd1]!,
-        confirmNewPasswordFieldConfig: inputConfigMap[FormFieldId.fd2]!);
 
     return ChangePasswordFormBloc._(
       initialState,
       inputDataMapper: inputDataMapper,
-      validationProvider: validationProvider,
-      dataProvider: ChangePasswordDataProvider(
-        data: formData,
-        inputDataMapper: inputDataMapper,
-      ),
+      inputConfigMap: inputConfigMap,
+      formValidationProvider: validationProvider,
     );
   }
 }

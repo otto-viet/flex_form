@@ -15,16 +15,26 @@ import 'form_providers.dart';
 
 part 'form_bloc.freezed.dart';
 
+class _FormValidationProvider extends FormValidationProvider<FormDataEntity> {
+  _FormValidationProvider(
+      {required super.inputConfigMap, required super.inputDataMapper});
+}
+
 /// A BLoC implementation for a form with TextInput components.
 class FormBloc extends Bloc<FormEvent, FormBlocState> {
   FormBloc(
     FormBlocState initialState, {
-    required this.validationProvider,
+    FormValidationProvider<FormDataEntity>? formValidationProvider,
     required this.inputDataMapper,
+    required this.inputConfigMap,
     this.dataProvider,
     this.requiredLoad = false,
     this.requiresChangesOnSubmission = true,
-  }) : super(initialState.copyWith(isContentLoaded: !requiredLoad)) {
+  })  : validationProvider = formValidationProvider ??
+            _FormValidationProvider(
+                inputConfigMap: inputConfigMap,
+                inputDataMapper: inputDataMapper),
+        super(initialState.copyWith(isContentLoaded: !requiredLoad)) {
     on<FormEvent>(_onEvent, transformer: sequential());
     _initializeDataInputMapWithMapData(dataProvider?.data);
   }
@@ -34,6 +44,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
   final FormDataProvider? dataProvider;
   final FormValidationProvider<FormDataEntity> validationProvider;
   final FormInputDataMapper<FormDataEntity> inputDataMapper;
+  final Map<FormFieldId, FormFieldConfig> inputConfigMap;
 
   /// The client-specific entity assigned when a form is submitted and its data
   /// is stored in this entity.

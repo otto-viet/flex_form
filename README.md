@@ -63,12 +63,12 @@ The following components make up a Flex Form:
 9. **getValidationMessage** - A utility function for getting the validation message for an invalid FormFieldValidation.
 
 ### How to Implement a Form
-1. Extends the `FormDataEntity` class to define the data for the form an overrides the Equatable's `props` getter.
-2. Implements the `FormValidationProvider` interface by providing an implementation for the `isDirty`, `isValid`, `validate` and `validateUponSubmission`.
-3. Implements the `FormInputDataMapper` interface.
-4. Extends the FormBloc and a constructor which crates an instance of a FormBloc with an initial `FormBlocState` including a `Map<FormFieldId, FormFieldConfig>` map and a `FormVM` data. Pass this initial `FormBlocState` along with an instance of the `FormValidationProvider` extension class and an instance of the `FormInputDataMapper` extension to constructor. 
+1. Extend the `FormDataEntity` class to define the data for the form and override the Equatable's `props` getter. This is required by the `FormValidationProvider` to check if the form is valid as form's inputs change. 
+2. Optionally extend the `FormValidationProvider` base class to provide custom implementations for the `isDirty`, `isValid`, `validate` and `validateUponSubmission` APIs.
+3. Implements the `FormInputDataMapper` interface to provide mapping functionalities between the form's input map and the form's `FormDataEntity`.
+4. Extends `FormBloc` and provides a constructor which crates an instance of a FormBloc with an initial `FormBlocState`, a `Map<FormFieldId, FormFieldConfig>` inputConfigMap, an instance of the extended `InputDataMapper` class, an optional `FormValidationProvider` and an optional `FormDataProvider`. 
 
-To see FormFlex in action, check out the `form_with_data_builder.dart` and `form_with_text_input_builder.dart` examples located in the `/demo` folder to see how to build a form with a `FormInputBuilder` or a `FormDataBuilder`.
+To FormFlex in action, check out the `form_with_data_builder.dart` and `form_with_text_input_builder.dart` examples located in the `/demo` folder. These examples demonstrate how to build a form with the `FormInputBuilder` and `FormDataBuilder` builders.
 
 [Example of a form built with a TextInputBuilder]
 ```dart
@@ -198,7 +198,25 @@ To see FormFlex in action, check out the `form_with_data_builder.dart` and `form
 
 2. For more details about how the Flex Form works, refer to this Medium [TBD] article. 
 
+## How to contribute
+### How to build FormFlex
+1. Run the following command to do a clean build of all of the packages (i.e. `flex_form` and `flex_form_demo`) in the project.
+
+```melos clean-build:form``` 
+
+2. Optionally the following commands to build each package separately.
+
+```melos build:form``` 
+
+```melos build:form-demo```
+
+3. Lint the project before opening a PR by running
+
+```melos analyze```
+
 
 ## TODOs
-1. [ ] Convert FormValidationProvider into a base class.
+1. [X] Convert FormValidationProvider into a base class.
 2. [ ] Add documentation and tutorials
+3. [ ] Code Generation and other tools to improve development workflow
+4. [ ] Add Tests
