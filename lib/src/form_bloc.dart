@@ -62,9 +62,10 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     Emitter<FormBlocState> emitter,
   ) async =>
       switch (event) {
-        _FormUpdating() => _handleFormUpdating(event.eventAction, emitter),
-        _FormValidating() => _handleFormValidation(emitter),
-        _FormInitializing() => _handleFormInitializing(
+        _FormPerformActionStarted() =>
+          _handleFormUpdating(event.eventAction, emitter),
+        _FormValidateFieldStarted() => _handleFormValidation(emitter),
+        _FormInitializeFormStarted() => _handleFormInitializing(
             emitter,
             initializeWithValidationErrors:
                 event.initializeWithValidationErrors,
@@ -73,21 +74,21 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
             entityId: event.entityId,
             title: event.title,
           ),
-        _FormInputChanging() => _handleFormInputChanging(
+        _FormChangeInputStarted() => _handleFormInputChanging(
             event.fieldId,
             event.inputValue ?? '',
             emitter,
           ),
-        _FormInputExiting() => _handleFormInputExiting(
+        _FormExitInputTapped() => _handleFormInputExiting(
             event.fieldId,
             event.inputValue ?? '',
             emitter,
           ),
-        _FormInputSelectionChanging() =>
+        _FormSelectOptionTapped() =>
           _handleFormInputChanging(event.fieldId, event.value, emitter),
-        _FormInputToggling() =>
+        _FormToggleInputTapped() =>
           _handleFormInputToggling(event.fieldId, emitter),
-        _FormUpdatingValidation() =>
+        _FormUpdateValidationStarted() =>
           _handleFormValidationUpdate(event.validationMap, emitter),
       };
 
@@ -156,7 +157,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         // implementation for [validateUponSubmission] because not all of
         // them need to validate the form before submitting it.
         if (formValidationResult?.keys.isNotEmpty ?? false) {
-          add(FormEvent.updatingValidation(formValidationResult!));
+          add(FormEvent.updateValidationStarted(formValidationResult!));
         } else {
           emit(
             state.copyWith(
@@ -951,7 +952,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     return validationResult;
   }
 
-  /// Checks and return the submittable status of the form.
+  /// Checks and returns the submittable status of the form.
   Future<bool> _canSubmit(
     FormDataEntity? original,
     FormDataEntity current,
@@ -1015,50 +1016,51 @@ enum FormFieldValidation {
 sealed class FormEvent with _$FormEvent {
   /// Event to notify the BLoC when it needs to process an action that could
   /// come from a user's action or internal within the BLoC itself.
-  const factory FormEvent.updating({FormAction? eventAction}) = _FormUpdating;
-  const factory FormEvent.validating() = _FormValidating;
+  const factory FormEvent.performActionStarted({FormAction? eventAction}) =
+      _FormPerformActionStarted;
+  const factory FormEvent.validateFieldStarted() = _FormValidateFieldStarted;
 
   /// Event to notify the BLoC when it needs to start loading the form's data.
-  const factory FormEvent.initializing({
+  const factory FormEvent.initializeFormStarted({
     @Default(false) bool initializeWithValidationErrors,
     @Default(false) bool isReinitializing,
     Map<FormFieldId, dynamic>? formData,
     dynamic entityId,
     String? title,
-  }) = _FormInitializing;
+  }) = _FormInitializeFormStarted;
 
   /// Event to notify the BLoC when a the user is changing the input in a
   /// TextInput field.
-  const factory FormEvent.inputChanging(
+  const factory FormEvent.changeInputStarted(
     FormFieldId fieldId,
     String? inputValue,
-  ) = _FormInputChanging;
+  ) = _FormChangeInputStarted;
 
   /// Event to notify the BLoC when a the user is leaving a TextInput field.
-  const factory FormEvent.inputExiting(
+  const factory FormEvent.exitInputTapped(
     FormFieldId fieldId,
     String? inputValue,
-  ) = _FormInputExiting;
+  ) = _FormExitInputTapped;
 
   /// Event to notify the BLoC when a "Toggle" input has been toggled.
-  const factory FormEvent.toggling(
+  const factory FormEvent.toggleInputTapped(
     FormFieldId fieldId,
-  ) = _FormInputToggling;
+  ) = _FormToggleInputTapped;
 
   /// Event to notify the BLoC when a selection (single-value or
   /// multi-value) is made.
-  const factory FormEvent.selectionChanging(
+  const factory FormEvent.selectOptionTapped(
     FormFieldId fieldId,
     dynamic value,
-  ) = _FormInputSelectionChanging;
+  ) = _FormSelectOptionTapped;
 
   /// Emitted when the form needs to be updated with a map of validation
   /// information. This could be the result of a manual call to validate
   /// the whole form before submission or when a form's client just wants
   /// to validate the form and highlight the validation information in the form.
-  const factory FormEvent.updatingValidation(
+  const factory FormEvent.updateValidationStarted(
     Map<FormFieldId, String> validationMap,
-  ) = _FormUpdatingValidation;
+  ) = _FormUpdateValidationStarted;
 }
 
 @freezed

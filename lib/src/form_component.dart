@@ -97,7 +97,7 @@ class _FormComponentState extends State<FormComponent> {
           if (_inputFocusNodeMap[e]?.hasFocus == false &&
               !widget.bloc.isClosed) {
             widget.bloc.add(
-              FormEvent.inputExiting(e, _inputTextControllerMap[e]?.text),
+              FormEvent.exitInputTapped(e, _inputTextControllerMap[e]?.text),
             );
           }
         }),
@@ -119,7 +119,7 @@ class _FormComponentState extends State<FormComponent> {
             const Duration(milliseconds: 200),
             (List<dynamic>? args) {
               widget.bloc.add(
-                FormEvent.inputChanging(e, _inputTextControllerMap[e]?.text),
+                FormEvent.changeInputStarted(e, _inputTextControllerMap[e]?.text),
               );
             },
             <dynamic>[],
@@ -161,7 +161,7 @@ class _FormComponentState extends State<FormComponent> {
             canSubmit: state.canSubmit,
             onSubmit: state.canSubmit
                 ? () => widget.bloc.add(
-                      const FormEvent.updating(
+                      const FormEvent.performActionStarted(
                         eventAction: FormAction.userInitiatingSubmission,
                       ),
                     )
@@ -185,17 +185,17 @@ class _FormComponentState extends State<FormComponent> {
                     break;
                   case SingleSelectInputViewModel():
                     widget.bloc.add(
-                      FormEvent.selectionChanging(inputFieldId, value),
+                      FormEvent.selectOptionTapped(inputFieldId, value),
                     );
                     break;
                   case MultipleSelectInputViewModel():
                     widget.bloc.add(
-                      FormEvent.selectionChanging(inputFieldId, value),
+                      FormEvent.selectOptionTapped(inputFieldId, value),
                     );
                     break;
                   case ToggledValueInputViewModel():
                     widget.bloc.add(
-                      FormEvent.toggling(inputFieldId),
+                      FormEvent.toggleInputTapped(inputFieldId),
                     );
                     break;
                 }
@@ -203,7 +203,7 @@ class _FormComponentState extends State<FormComponent> {
             ),
             onSubmit: state.canSubmit
                 ? () => widget.bloc.add(
-                      const FormEvent.updating(
+                      const FormEvent.performActionStarted(
                         eventAction: FormAction.userInitiatingSubmission,
                       ),
                     )

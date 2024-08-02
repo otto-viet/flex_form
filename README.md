@@ -14,36 +14,32 @@ and the Flutter guide for
 
 Form development typically involves duplication of code at many levels from managing user interactions with a form to handling the loading and submission of the form's data. And depending on the complexity of a form and the number of forms required by an application, the effort to develop and maintain the forms can grow quickly.
 
-This is why Flex Form was born with the following goals:
+This is why FlexForm was born, and it attempts to achieve these goals:
 
-1. [ ] Consolidating all essential form interaction logic and providing it to any form by default.
+1. [ ] Consolidating all essential form interaction logic and making it available for free to developers.
 2. [ ] Streamlining the development of forms by making it highly configurable and extensible.
 3. [ ] Supporting all types of form inputs while leaving it up to developers to provide the UI for their forms.
-4. [ ] Enabling extension of form's custom validation while providing APIs and hooks for more control of the forms at runtime.
+4. [ ] Enabling extension of form's custom validation while providing APIs and hooks for better control of form custom functionalities.
 
 
 ## Features
 
-1. [ ] **Flexibility** - Flex Form supports forms with all popular input types which include text, single-select, multi-select and toggle inputs.
-2. [ ] **Configurable** - Flex Form provides fields configurations which can be used to configure each field's value requirements such as `required`, `min`, `max`, and `regex`.
-3. [ ] **Extensible** - Flex Form enables forms of any level of complexity from a Login form to forms with any number of fields.
-4. [ ] **Customization** - Flex Form enables easy integration of custom validation logic based on the business requirements.
-5. [ ] **UI-independent** - Flex Form does not dictate how forms should look and feel. Instead, it takes care all of the basic form input interaction and provides update of the form's state which the application can use to build the form.
-6. [ ] **Modular** - Flex Form's architecture enables developers to build form components that provide specific functionalities for the form based on the application's domain requirements. These components can be developed and tested independently of Flex Form. 
+1. [ ] **Flexibility** - FlexForm supports form development with all popular input types including text, single-select, multi-select and toggle.
+2. [ ] **Configurable** - FlexForm provides field configurations which can be used to configure how form fields function during runtime. E.g. `allowEmpty`, `minChars`, `maxChars`, `regexList`, etc.
+3. [ ] **Extensible** - FlexForm enables forms with any level of complexity from a simple Login form to forms with any number of fields.
+4. [ ] **Customization** - FlexForm enables easy and flexible integration of custom validation logic based on a form's business domain requirements.
+5. [ ] **UI-independent** - FlexForm does not dictate how forms should look and feel. Instead, it takes care all of the basic form input interaction and provides update of the form's state which be used by application at runtime to build for form.
+6. [ ] **Modular** - FlexForm's architecture enables developers to build form components that provide specific functionalities for the form based on the application's domain requirements. These components can be developed and tested independently of FlexForm. 
 
 ## Getting started
 
-Flex Form's architecture is based on the BLoC design pattern. Flex Form depends on [bloc](https://bloclibrary.dev/) and [flutter_bloc](https://pub.dev/packages/flutter_bloc), which are the popular packages that implement BLoC and provides a very good state management solution for Flutter applications.
+FlexForm's architecture is based on the BLoC design pattern. Specifically, FlexForm depends on [bloc](https://bloclibrary.dev/) and [flutter_bloc](https://pub.dev/packages/flutter_bloc), which are very popular packages that implement BLoC and which provides a very good state management solution for Flutter applications.
 
-Flex Form supports all platforms and there's no additional setup required to get started.
+FlexForm supports all platforms and there's no additional setup required to get started.
 
-To get started, add a dependency to `flex_form` in your Flutter application. 
+To get started, simply add a dependency to `flex_form` in your Flutter application's pubspec.yaml file and you're good to go. Well, you'll still need to read a bit to learn how to use FormFlex. 
 
-```
- dependencies:
-    ...
-    flex_form: any
-```
+But don't worry, we will continue improving it and making it easier to use.
 
 
 ## Usage
@@ -70,17 +66,18 @@ The following components make up a Flex Form:
 
 To FormFlex in action, check out the `form_with_data_builder.dart` and `form_with_text_input_builder.dart` examples located in the `/demo` folder. These examples demonstrate how to build a form with the `FormInputBuilder` and `FormDataBuilder` builders.
 
-[Example of a form built with a TextInputBuilder]
+**Example of a form built with a TextInputBuilder**
+
 ```dart
     FormComponent(
       bloc: _changePasswordFormBloc,
       textInputBuilder: ({
+        required textInputs,
+        required context,
         buttonText,
         canSubmit,
         cancelButtonText,
-        required context,
         onSubmit,
-        required textInputs,
       }) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -109,17 +106,19 @@ To FormFlex in action, check out the `form_with_data_builder.dart` and `form_wit
     )
 ```
 
-[Example of a form built with a DataBuilder]
+**Example of a form built with a DataBuilder**
+
 ```dart
     FormComponent(
       bloc: _changePasswordFormBloc,
       dataBuilder: (
-          {buttonText,
+          {
+          required inputMap,
+          required context,
+          buttonText,
           canSubmit,
           cancelButtonText,
-          required context,
           focusNodeMap,
-          required inputMap,
           isLoading,
           isSubmitting,
           onChangeCallbackMap,
@@ -192,31 +191,53 @@ To FormFlex in action, check out the `form_with_data_builder.dart` and `form_wit
 ```
 
 ## Additional information
-1. To run the live demo of the examples, configure and install [melos](https://melos.invertase.dev/) and build the `demo` package by running `melos build:form-demo`. Once the demo is built, run `flutter run -t demo/lib/main.dart -d chrome` to run the demo.
+1. To run the live demo of the examples, configure [melos](https://melos.invertase.dev/) and use it to run the `demo` package by running `melos build:form-demo` to build the package, then running `flutter run -t demo/lib/main.dart -d chrome` (or `melos run:demo`) to run the demo Flutter app.
 
 ![flex_form_demo.png](flex_form_demo.png)
 
-2. For more details about how the Flex Form works, refer to this Medium [TBD] article. 
+2. For more details about how the FlexForm works, refer to this Medium [TBD] article. 
 
-## How to contribute
+## Developers
 ### How to build FormFlex
 1. Run the following command to do a clean build of all of the packages (i.e. `flex_form` and `flex_form_demo`) in the project.
 
-```melos clean-build:form``` 
+```
+melos clean-build:form
+``` 
 
 2. Optionally the following commands to build each package separately.
 
-```melos build:form``` 
+```
+melos build:form
+``` 
 
-```melos build:form-demo```
+```
+melos build:form-demo
+```
 
 3. Lint the project before opening a PR by running
 
-```melos analyze```
+```
+melos analyze
+```
+
+### How test form changes
+
+1. Run the existing to view a demo of different form examples
+
+```
+melos run:demo
+```
+
+2. Add new examples by creating a new feature folder under the `/demo/features` folder.
+
+### How to contribute
+
+Contribution from the community is welcomed. Please feel free to open a PR.
 
 
 ## TODOs
 1. [X] Convert FormValidationProvider into a base class.
 2. [ ] Add documentation and tutorials
-3. [ ] Code Generation and other tools to improve development workflow
+3. [ ] Add code generation and other tools to improve development workflow
 4. [ ] Add Tests

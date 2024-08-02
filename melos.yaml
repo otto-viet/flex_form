@@ -47,3 +47,8 @@ scripts:
     run: |
       melos exec --fail-fast --scope='flex_form_demo' 'flutter clean' \
       && melos run build:form-demo
+
+  run:demo:
+    run: |
+      melos exec --fail-fast --scope='flex_form_demo' \
+       'flutter run -d chrome'
