@@ -4,7 +4,7 @@ import 'package:flex_form_demo/features/change_password/data/change_password_for
 class ChangePasswordInputDataMapper
     implements FormInputDataMapper<ChangePasswordFormDataEntity> {
   @override
-  FormDataEntity? toFormProviderEntity(Map<FormFieldId, dynamic>? inputMap) {
+  FormDataEntity? toFormDataEntity(Map<FormFieldId, dynamic>? inputMap) {
     return ChangePasswordFormDataEntity(
       oldPassword: inputMap?[FormFieldId.fd0],
       newPassword: inputMap?[FormFieldId.fd1],
@@ -13,7 +13,8 @@ class ChangePasswordInputDataMapper
   }
 
   @override
-  Map<FormFieldId, dynamic> toInput(ChangePasswordFormDataEntity entity) {
+  Map<FormFieldId, dynamic> toFormInputData(
+      ChangePasswordFormDataEntity entity) {
     return <FormFieldId, String?>{
       FormFieldId.fd0: entity.oldPassword,
       FormFieldId.fd1: entity.newPassword,

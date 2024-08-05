@@ -63,11 +63,4 @@ class ChangePasswordValidationProvider
 
     return validationResults;
   }
-
-  @override
-  Future<Map<FormFieldId, String>?> validateUponSubmission(
-      ChangePasswordFormDataEntity entity,
-      {ChangePasswordFormDataEntity? original}) async {
-    return null;
-  }
 }

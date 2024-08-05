@@ -28,6 +28,11 @@ scripts:
     packageFilters:
       scope: '*'
 
+  build:
+    run: |
+      melos run build:form \
+      && melos run build:form-demo
+
   build:form:
     run: |
       melos exec --fail-fast --scope='flex_form' -- \

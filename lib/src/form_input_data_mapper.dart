@@ -6,11 +6,11 @@ import 'form_field_id.dart';
 /// form's [FormDataEntity]'s corresponding property.
 abstract class FormInputDataMapper<T extends FormDataEntity> {
   /// Map a [FormDataEntity] to a map of form field keys and field values
-  Map<FormFieldId, dynamic> toInput(T entity);
+  Map<FormFieldId, dynamic> toFormInputData(T entity);
 
   /// Maps to the [FormDataEntity] which can be used by a FormDataProvider
   /// to submit the form's data.
-  FormDataEntity? toFormProviderEntity(Map<FormFieldId, dynamic>? inputMap);
+  FormDataEntity? toFormDataEntity(Map<FormFieldId, dynamic>? inputMap);
 }
 
 /// An entity associated with a form's data which is defined as a [Map] of

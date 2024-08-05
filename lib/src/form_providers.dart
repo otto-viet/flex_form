@@ -1,8 +1,5 @@
 import 'package:flex_form/flex_form.dart';
 
-import 'form_field_id.dart';
-import 'form_input_data_mapper.dart';
-
 /// A basic interface for a form that requires loading and submitting data.
 abstract class FormDataProvider {
   FormDataProvider({
@@ -32,7 +29,7 @@ abstract class FormValidationProvider<T extends FormDataEntity> {
   /// Indicates if the current state of the form is valid. Typically this is
   /// called only when the form is realized to be dirty.
   Future<bool> isValid(T current) async {
-    final inputMap = inputDataMapper.toInput(current);
+    final inputMap = inputDataMapper.toFormInputData(current);
     bool result = true;
     for (var formFieldId in inputMap.keys) {
       result = result &&

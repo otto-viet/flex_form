@@ -1,7 +1,7 @@
 name: flex_form
 description: "Flex Form streamlines development forms of all complexities."
 version: 0.0.1
-homepage:
+homepage: https://www.ottobookings.com/
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
@@ -15,7 +15,7 @@ dependencies:
   equatable: ^2.0.5
   flutter_bloc: ^8.1.6
   freezed_annotation: ^2.4.4
-  collection: any
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:

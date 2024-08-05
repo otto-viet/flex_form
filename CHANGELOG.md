@@ -1,3 +1,6 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Includes a complete solution for building flexible forms using a `FormComponent` widget.
+* Enables form development using form field configurations out of the box.
+* Includes a `FormDataBuilder` and a `FormInputBuilder` builders to build the form's UI.
+* Enabling custom functionalities with `FormValidationProvider` and `FormDataProvider` extensions.
