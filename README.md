@@ -45,6 +45,8 @@ But don't worry, we will continue improving it and making it easier to use.
 ## Usage
 ### Architecture
 
+![Architecture Diagram](https://github.com/otto-viet/flex_form/blob/main/flex_form_architecture.png?raw=true)
+
 The following components make up a Flex Form:
 1. **FormBloc** - A base class which extends the `Bloc` class and provides all of the functionalities for a form. It requires a `FormValidationProvider<FormDataEntity>` and a `FormInputDataMapper` which are needed by the extended FormBloc.
 2. **FormValidationProvider** - An interface defining validation functionalities used by the base `FormBloc` to validate a form.
@@ -64,7 +66,7 @@ The following components make up a Flex Form:
 3. Implements the `FormInputDataMapper` interface to provide mapping functionalities between the form's input map and the form's `FormDataEntity`.
 4. Extends `FormBloc` and provides a constructor which crates an instance of a FormBloc with an initial `FormBlocState`, a `Map<FormFieldId, FormFieldConfig>` inputConfigMap, an instance of the extended `InputDataMapper` class, an optional `FormValidationProvider` and an optional `FormDataProvider`. 
 
-To FormFlex in action, check out the `form_with_data_builder.dart` and `form_with_text_input_builder.dart` examples located in the `/demo` folder. These examples demonstrate how to build a form with the `FormInputBuilder` and `FormDataBuilder` builders.
+To FormFlex in action, check out the `form_with_data_builder.dart` and `form_with_text_input_builder.dart` examples located in the `/example` folder. These examples demonstrate how to build a form with the `FormInputBuilder` and `FormDataBuilder` builders.
 
 **Example of a form built with a TextInputBuilder**
 
@@ -193,11 +195,11 @@ To FormFlex in action, check out the `form_with_data_builder.dart` and `form_wit
 ## Additional information
 1. To run the live demo of the examples, configure [melos](https://melos.invertase.dev/) and use it to run the `demo` package by running `melos build:form-demo` to build the package, then running `flutter run -t demo/lib/main.dart -d chrome` (or `melos run:demo`) to run the demo Flutter app.
 
-![flex_form_demo.png](flex_form_demo.png)
 
-[View Live Demo](https://youtu.be/MTjc6wGnevY)
+![Form Demo](https://github.com/otto-viet/flex_form/blob/main/change_password_demo.gif?raw=true)
 
-2. For more details about how the FlexForm works, refer to this Medium [TBD] article. 
+
+2. For more details about how the FlexForm works, check out this [Medium](https://medium.com/@qt.nguynh/building-flexible-flutter-forms-with-flexform-ebfbc2d4d992) article. 
 
 ## Developers
 ### How to build FormFlex
@@ -205,7 +207,7 @@ To FormFlex in action, check out the `form_with_data_builder.dart` and `form_wit
 
 ```
 melos clean-build:form
-``` 
+```  
 
 2. Optionally the following commands to build each package separately.
 
@@ -223,7 +225,7 @@ melos build:form-demo
 melos analyze
 ```
 
-### How test form changes
+### How to test form changes
 
 1. Run the existing to view a demo of different form examples
 
@@ -231,7 +233,7 @@ melos analyze
 melos run:demo
 ```
 
-2. Add new examples by creating a new feature folder under the `/demo/features` folder.
+2. Add new examples by creating a new feature folder under the `/example/features` folder.
 
 ### How to contribute
 
@@ -239,7 +241,6 @@ Contribution from the community is welcomed. Please feel free to open a PR.
 
 
 ## TODOs
-1. [X] Convert FormValidationProvider into a base class.
-2. [ ] Add documentation and tutorials
-3. [ ] Add code generation and other tools to improve development workflow
-4. [ ] Add Tests
+1. [ ] Add documentation and tutorials
+2. [ ] Add code generation and other tools to improve development workflow
+3. [ ] Add Tests

@@ -1,7 +1,7 @@
 name: flex_form
 
 packages:
-  - ./demo
+  - ./example
   - .
 
 scripts:

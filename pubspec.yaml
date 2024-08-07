@@ -1,7 +1,7 @@
 name: flex_form
 description: "Flex Form streamlines development forms of all complexities."
-version: 0.0.1
-homepage: https://www.ottobookings.com/
+version: 0.0.1+7
+homepage: https://github.com/otto-viet/flex_form
 
 environment:
   sdk: '>=3.4.3 <4.0.0'

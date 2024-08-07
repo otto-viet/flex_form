@@ -119,7 +119,8 @@ class _FormComponentState extends State<FormComponent> {
             const Duration(milliseconds: 200),
             (List<dynamic>? args) {
               widget.bloc.add(
-                FormEvent.changeInputStarted(e, _inputTextControllerMap[e]?.text),
+                FormEvent.changeInputStarted(
+                    e, _inputTextControllerMap[e]?.text),
               );
             },
             <dynamic>[],

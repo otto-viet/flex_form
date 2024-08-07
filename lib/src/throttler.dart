@@ -8,6 +8,7 @@ class Throttler {
 
   /// Amount of time delayed before the next execution starts.
   Duration delay;
+
   /// Function passed in by caller to allow it to be executed when it's time.
   ValueChanged<dynamic> callback;
   DateTime? lastExecutedOn;
@@ -33,8 +34,12 @@ class Throttler {
 
 /// A debouncer to control a user inputs into a text box.
 class Debouncer {
-  Debouncer(this.delay, this.callback, this.args,
-      {this.immediateExecute = false,});
+  Debouncer(
+    this.delay,
+    this.callback,
+    this.args, {
+    this.immediateExecute = false,
+  });
 
   Duration delay;
   ValueChanged<List<dynamic>?> callback;
