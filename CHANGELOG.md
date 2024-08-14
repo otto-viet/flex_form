@@ -7,3 +7,6 @@
 
 ## 0.0.1+1
 * Renamed `/demo` package to `/example`.
+* 
+## 0.0.2
+* Add code documentation and updated README.

@@ -15,6 +15,7 @@ abstract class FormDataProvider {
   Future<dynamic> load();
 }
 
+/// An interface to provide custom validation logic for a form.
 abstract class FormValidationProvider<T extends FormDataEntity> {
   FormValidationProvider({
     required this.inputConfigMap,

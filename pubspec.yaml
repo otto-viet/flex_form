@@ -1,6 +1,6 @@
 name: flex_form
-description: "Flex Form streamlines development forms of all complexities."
-version: 0.0.1+7
+description: "Flex Form streamlines form development of all complexities by removing all of the mundane work in setting up a form and replacing that with form configurations and custom extensions based on the requirements of each form."
+version: 0.0.2
 homepage: https://github.com/otto-viet/flex_form
 
 environment:

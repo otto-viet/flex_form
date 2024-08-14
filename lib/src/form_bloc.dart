@@ -20,45 +20,70 @@ class _FormValidationProvider extends FormValidationProvider<FormDataEntity> {
       {required super.inputConfigMap, required super.inputDataMapper});
 }
 
-/// A BLoC implementation for a form with TextInput components.
+/// A BLoC implementation for a form. It is used by a [FormComponent] to
+/// communicate form's changes to the form's client application.
 class FormBloc extends Bloc<FormEvent, FormBlocState> {
   FormBloc(
     FormBlocState initialState, {
-    FormValidationProvider<FormDataEntity>? formValidationProvider,
     required this.inputDataMapper,
     required this.inputConfigMap,
-    this.dataProvider,
     this.requiredLoad = false,
     this.requiresChangesOnSubmission = true,
-  })  : assert(dataProvider == null || !requiredLoad,
-            'dataProvider must be provided when requiredLoad is true.'),
-        validationProvider = formValidationProvider ??
+    FormDataProvider? dataProvider,
+    FormValidationProvider<FormDataEntity>? formValidationProvider,
+  })  : _dataProvider = dataProvider,
+        assert(dataProvider == null || !requiredLoad,
+            'A dataProvider must be provided when requiredLoad is true.'),
+        _validationProvider = formValidationProvider ??
             _FormValidationProvider(
                 inputConfigMap: inputConfigMap,
                 inputDataMapper: inputDataMapper),
         super(initialState.copyWith(isContentLoaded: !requiredLoad)) {
     on<FormEvent>(_onEvent, transformer: sequential());
-    _initializeDataInputMapWithMapData(dataProvider?.data);
+    _initializeDataInputMapWith(_dataProvider?.data);
   }
 
+  /// A provider to load and submit a form.
+  /// If one is not provided, [FormBloc] will rely on the client application to
+  /// provide data to the form as well as deciding how the form's data is
+  /// submitted.
+  final FormDataProvider? _dataProvider;
+
+  /// A provider to provides custom validation logic for a form.
+  /// This is useful when client forms have custom validation logic specific to
+  /// each form.
+  final FormValidationProvider<FormDataEntity> _validationProvider;
+
   /// Indicates if the form's data need to be loaded from the [FormDataProvider]
+  /// This requires a [dataProvider] to be provided by the client application.
   final bool requiredLoad;
+
+  /// When true, the form can be submitted without any change in the form after
+  /// the form is initialized,
   final bool requiresChangesOnSubmission;
-  final FormDataProvider? dataProvider;
-  final FormValidationProvider<FormDataEntity> validationProvider;
+
+  /// A mapper between the form's [FormDataEntity] and the form's
+  /// Map<FormFieldId, dynamic>? inputMap.
   final FormInputDataMapper<FormDataEntity> inputDataMapper;
+
+  /// The configurations for each field in the form.
   final Map<FormFieldId, FormFieldConfig> inputConfigMap;
 
-  /// The client-specific entity assigned when a form is submitted and its data
-  /// is stored in this entity.
+  /// The client-specific entity assigned when a form is submitted.
+  /// The type of this _savedEntity is not [FormDataEntity]. It's up to the
+  /// client form to define a domain entity for this.
   dynamic _savedEntity;
 
-  /// The current map of the form's data to its [FormDataEntity].
+  /// Gets the form's current data as a [FormDataEntity].
   FormDataEntity? get formEntity =>
-      inputDataMapper.toFormDataEntity(_getInputData());
+      inputDataMapper.toFormDataEntity(_getInputDataFromCurrentFormState());
+
+  /// Gets the saved entity which is updated after thef form is submitted.
   dynamic get savedEntity => _savedEntity;
+
+  /// Gets the original [FormDataEntity] from the data provider.
   FormDataEntity? get originalEntity =>
-      inputDataMapper.toFormDataEntity(dataProvider?.data);
+      inputDataMapper.toFormDataEntity(_dataProvider?.data);
 
   Future<void> _onEvent(
     FormEvent event,
@@ -95,24 +120,28 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
           _handleFormValidationUpdate(event.validationMap, emitter),
       };
 
-  Future<Map<FormFieldId, String>?> _getFormValidationResults() async {
+  Future<Map<FormFieldId, String>?>
+      _getValidationResultsUponFormSubmission() async {
     final FormDataEntity? entity = inputDataMapper.toFormDataEntity(
-      _getInputData(),
+      _getInputDataFromCurrentFormState(),
     );
 
     if (entity == null) {
       return null;
     }
 
-    return validationProvider.validateUponSubmission(
+    return _validationProvider.validateUponSubmission(
       entity,
       original: originalEntity,
     );
   }
 
+  /// Event handler for handling the validation of the whole form.
+  /// The result of this helper function is the updated form's inputMap being
+  /// updated with the validation results.
   Future<void> _handleFormValidation(Emitter<FormBlocState> emit) async {
     final Map<FormFieldId, String>? validationMap =
-        await _getFormValidationResults();
+        await _getValidationResultsUponFormSubmission();
 
     // Not all [FormValidationProvider] implementations provide an
     // implementation for [validateUponSubmission] because not all of
@@ -122,6 +151,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     }
   }
 
+  /// Updates the form's input with the form's validation information.
   Future<void> _handleFormValidationUpdate(
     Map<FormFieldId, String> validationMap,
     Emitter<FormBlocState> emit,
@@ -144,7 +174,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     );
   }
 
-  /// Handles other action-based events.
+  /// Handles different form updating events.
   Future<void> _handleFormUpdating(
     FormAction? eventAction,
     Emitter<FormBlocState> emit,
@@ -154,7 +184,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         // Validate the whole form to make sure all form inputs are valid
         // before updating.
         final Map<FormFieldId, String>? formValidationResult =
-            await _getFormValidationResults();
+            await _getValidationResultsUponFormSubmission();
 
         // Not all [FormValidationProvider] implementations provide an
         // implementation for [validateUponSubmission] because not all of
@@ -176,9 +206,10 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
           // the FormProviderEntity used to map between the form and its data.
           dynamic entity;
 
-          if (dataProvider != null) {
+          if (_dataProvider != null) {
             try {
-              entity = await dataProvider!.submit(_getInputData());
+              entity = await _dataProvider
+                  .submit(_getInputDataFromCurrentFormState());
             } on Exception catch (error) {
               // If the saving is OK, let the UI component know so that it
               // can update its UI.
@@ -213,7 +244,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         break;
       case FormAction.userCancelingStarted:
         // Reset the form with the current provider.data
-        _initializeDataInputMapWithMapData(dataProvider?.data);
+        _initializeDataInputMapWith(_dataProvider?.data);
         emit(
           state.copyWith(
             data: state.data.copyWith(inputMap: state.data.inputMap),
@@ -229,10 +260,10 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     }
   }
 
-  /// Handles the form's loading event.
+  /// Handles the initializing event of the form.
   ///
-  /// This bloc will use the [dataProvider] to load the data and save it in
-  /// the provider's data property. It a form doesn't have a
+  /// This bloc will use the [_dataProvider] to load the data and save it in
+  /// the provider's data property.
   Future<void> _handleFormInitializing(
     Emitter<FormBlocState> emit, {
     bool initializeWithValidationErrors = false,
@@ -251,30 +282,31 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         ),
       );
 
-      // If a data provider was initialized, make sure its data is initialized
+      // If a data provider was provided, make sure its data is initialized
       // with the provided formData.
-      if (dataProvider != null) {
-        dataProvider?.data = <FormFieldId, dynamic>{};
-        dataProvider!.entityId = entityId;
+      if (_dataProvider != null) {
+        _dataProvider.data = <FormFieldId, dynamic>{};
+        _dataProvider.entityId = entityId;
 
         if (formData != null) {
-          dataProvider!.data = formData;
+          _dataProvider.data = formData;
         } else {
           try {
-            await dataProvider!.load();
+            await _dataProvider.load();
           } on Exception catch (error) {
             addError(error);
           }
         }
       }
 
-      isFormValid = (dataProvider?.data.isNotEmpty ?? false) &&
-          await validationProvider.isValid(
-            originalEntity!,
-          );
+      isFormValid = (_dataProvider?.data.isNotEmpty ?? false) &&
+          await _validationProvider.isValid(originalEntity!);
 
+      // Clear the form's input map to prepare for new data from the data
+      // provider.
       _clearDataInputMap();
-      _initializeDataInputMapWithMapData(dataProvider?.data);
+      // Update the state.data.inputMap with new data.
+      _initializeDataInputMapWith(_dataProvider?.data);
 
       // Update the state with the new view model and mark initialization
       // complete.
@@ -293,11 +325,9 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         ),
       );
     } else {
-      bool isFormValid = (dataProvider?.data.isNotEmpty ?? false) &&
-          await validationProvider.isValid(
-            originalEntity!,
-          );
-      _initializeDataInputMapWithMapData(dataProvider?.data);
+      bool isFormValid = (_dataProvider?.data.isNotEmpty ?? false) &&
+          await _validationProvider.isValid(originalEntity!);
+      _initializeDataInputMapWith(_dataProvider?.data);
       Map<FormFieldId, InputViewModel> newInputMap = state.data.inputMap;
 
       if (initializeWithValidationErrors) {
@@ -330,10 +360,10 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         );
 
         final FormDataEntity? entity = inputDataMapper.toFormDataEntity(
-          dataProvider?.data,
+          _dataProvider?.data,
         );
         final Map<FormFieldId, String>? validationMap =
-            await validationProvider.validate(
+            await _validationProvider.validate(
           entity!,
           original: originalEntity,
         );
@@ -396,11 +426,11 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         },
       );
 
-      final bool isFormDirty = validationProvider.isDirty(
+      final bool isFormDirty = _validationProvider.isDirty(
         originalEntity,
         inputDataMapper.toFormDataEntity(newInputData),
       );
-      bool isFormValid = await validationProvider.isValid(
+      bool isFormValid = await _validationProvider.isValid(
         inputDataMapper.toFormDataEntity(newInputData)!,
       );
 
@@ -409,10 +439,8 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         final FormDataEntity? entity = inputDataMapper.toFormDataEntity(
           newInputData,
         );
-
         late final Map<FormFieldId, String>? validationMap;
-
-        validationMap = await validationProvider.validate(
+        validationMap = await _validationProvider.validate(
           entity!,
           currentValidatedField: fieldId,
           original: originalEntity,
@@ -498,8 +526,8 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
         inputValue,
         isExitingField: true,
       );
-      final bool isFormValid = await validationProvider.isValid(
-        inputDataMapper.toFormDataEntity(_getInputData())!,
+      final bool isFormValid = await _validationProvider.isValid(
+        inputDataMapper.toFormDataEntity(_getInputDataFromCurrentFormState())!,
       );
 
       emit(
@@ -513,13 +541,12 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     }
   }
 
-  /// Handles then event when a user exit a form field after focusing on it.
+  /// Handles the event when a user exits a form field after focusing on it.
   ///
-  /// All of the field validation logics should already be handled by the
-  /// FormFieldInputChanging event above. This is mainly to validate the whole
-  /// form to get the validation message for each field. It does not check to
-  /// see if the form can be submitted because it's already handled by the
-  /// [_handleFormInputChanging] function.
+  /// All field validation logic should already be handled by the
+  /// FormFieldInputChanging event above. This is mainly used to validate the
+  /// whole form to get the validation message for each field. It does not check
+  /// to see if the form can be submitted.
   Future<void> _handleFormInputExiting(
     FormFieldId fieldId,
     String inputValue,
@@ -560,7 +587,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
       );
 
       // Check to see if the form is dirty
-      final bool isFormDirty = validationProvider.isDirty(
+      final bool isFormDirty = _validationProvider.isDirty(
         originalEntity,
         inputDataMapper.toFormDataEntity(newInputData),
       );
@@ -587,7 +614,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
             newInputMap[fieldId]?.errorText?.isEmpty ?? true;
         // Call the form's validator to run validation against the form again
         final Map<FormFieldId, String>? formValidationMap =
-            await validationProvider.validate(
+            await _validationProvider.validate(
           inputDataMapper.toFormDataEntity(newInputData)!,
           currentValidatedField: isCurrentFieldValid ? fieldId : null,
           original: originalEntity,
@@ -609,7 +636,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
             final newInputEntity =
                 inputDataMapper.toFormDataEntity(newInputData)!;
             final isFormValid =
-                await validationProvider.isValid(newInputEntity);
+                await _validationProvider.isValid(newInputEntity);
             canSubmit = isFormValid;
           }
         } else {
@@ -652,6 +679,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     }
   }
 
+  /// Handles the updating of a Toggle input's value.
   Future<void> _handleFormInputToggling(
     FormFieldId fieldId,
     Emitter<FormBlocState> emit,
@@ -664,8 +692,8 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     );
   }
 
-  /// Initialize the form's fields with values.
-  void _initializeDataInputMapWithMapData(Map<FormFieldId, dynamic>? data) {
+  /// Initializes the form's current state's inputMap with the [data] provided.
+  void _initializeDataInputMapWith(Map<FormFieldId, dynamic>? data) {
     if (data != null) {
       for (int i = 0; i < data.keys.length; i++) {
         final FormFieldId formFieldId = data.keys.elementAt(i);
@@ -700,7 +728,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     }
   }
 
-  /// Clear the the form inputs' values.
+  /// Clears the the form inputs' values.
   void _clearDataInputMap() {
     for (int i = 0; i < state.data.inputMap.keys.length; i++) {
       final FormFieldId formFieldId = state.data.inputMap.keys.elementAt(i);
@@ -740,8 +768,8 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     }
   }
 
-  /// Parses the input fields' value and returns a map of the fields' value.
-  Map<FormFieldId, dynamic> _getInputData() {
+  /// Parses the input fields' values and returns a map of the fields' value.
+  Map<FormFieldId, dynamic> _getInputDataFromCurrentFormState() {
     return state.data.inputMap.map<FormFieldId, dynamic>(
       (FormFieldId key, dynamic value) {
         final InputViewModel viewModel = state.data.inputMap[key]!;
@@ -760,21 +788,6 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
       },
     );
   }
-
-  /// Clears all errorText in each form input
-  /// TODO(quan): Verify before removing.
-  /*Map<FormFieldId, InputViewModel> _resetFormValidationInfo(
-    Map<FormFieldId, InputViewModel> inputMap,
-  ) {
-    for (final FormFieldId fieldId in inputMap.keys) {
-      inputMap[fieldId] = inputMap[fieldId]!.copyWith(
-        errorText: null,
-      );
-    }
-
-    // Create a new inputMap to update the state.data
-    return Map<FormFieldId, InputViewModel>.from(inputMap);
-  }*/
 
   /// Creates a new input map with the result of the field's validation.
   Map<FormFieldId, InputViewModel> _createInputMapWithFieldValidation(
@@ -806,6 +819,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     );
   }
 
+  /// Update the form's inputMap with the [fieldId]'s [inputValue].
   Map<FormFieldId, InputViewModel> _getInputMapWithFieldInfo(
     FormFieldId fieldId,
     String? fieldErrorText, {
@@ -848,7 +862,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     return newInputMap;
   }
 
-  /// Update each field in the [newInputMap] with the validation information
+  /// Updates each field in the [newInputMap] with the validation information
   /// included in the [validationMap].
   Map<FormFieldId, InputViewModel> _updateInputMapWithValidationMap(
     Map<FormFieldId, InputViewModel> newInputMap,
@@ -872,7 +886,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     return newInputMap;
   }
 
-  /// Used to validate a field as input is being entered into the field.
+  /// Validates a field as input is being entered into the field.
   /// [isExitingField] is used to tell the function to run the
   /// Field validation for the field on exit only.
   FormFieldValidation _checkAndPerformFieldValidation(
@@ -970,11 +984,11 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
     FormDataEntity current,
   ) async {
     return (!requiresChangesOnSubmission ||
-            validationProvider.isDirty(original, current)) &&
-        await validationProvider.isValid(current);
+            _validationProvider.isDirty(original, current)) &&
+        await _validationProvider.isValid(current);
   }
 
-  /// Look through the inputMap to find if there's a field with an error. If so,
+  /// Looks through the inputMap to find if there's a field with an error. If so,
   /// return true to indicate that.
   ///
   /// NOTES: This is typically called when the BLoC wants to know if previous
@@ -995,7 +1009,7 @@ class FormBloc extends Bloc<FormEvent, FormBlocState> {
   }
 }
 
-/// An action that triggers a FormBloc event.
+/// Form actions used to tell which event is current.
 enum FormAction {
   userInitiatingSubmission,
   userExisting,
@@ -1010,7 +1024,7 @@ enum FormAction {
   cancelingOk,
 }
 
-/// A Validation type associated with the validation result of a TextInput.
+/// Form field validation type associated with a validation relationship.
 enum FormFieldValidation {
   fieldTooLong,
   fieldTooShort,
@@ -1024,6 +1038,8 @@ enum FormFieldValidation {
   valueTooSmall,
 }
 
+/// All of the events used to communicate with the [FormBloc] to perform
+/// specific form actions.
 @freezed
 sealed class FormEvent with _$FormEvent {
   /// Event to notify the BLoC when it needs to process an action that could
@@ -1075,6 +1091,8 @@ sealed class FormEvent with _$FormEvent {
   ) = _FormUpdateValidationStarted;
 }
 
+/// The state of the [FormBloc] which is used to maintain the state of the
+/// form's.
 @freezed
 sealed class FormBlocState with _$FormBlocState {
   const factory FormBlocState({

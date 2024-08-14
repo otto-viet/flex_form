@@ -12,35 +12,35 @@ and the Flutter guide for
 -->
 ## Overview
 
-Form development typically involves duplication of code at many levels from managing user interactions with a form to handling the loading and submission of the form's data. And depending on the complexity of a form and the number of forms required by an application, the effort to develop and maintain the forms can grow quickly.
+Form development traditionally involves quite a bit of boilerplate code at different levels from defining form UI and managing user interactions to data loading, validation and submission of a form. Depending on the complexity of a form and the number of forms required by an application, the development and maintenance of these forms can become challenging.
 
-This is why FlexForm was born, and it attempts to achieve these goals:
+This is why FlexForm was born. It was created with the following goals in mind.
 
-1. [ ] Consolidating all essential form interaction logic and making it available for free to developers.
-2. [ ] Streamlining the development of forms by making it highly configurable and extensible.
-3. [ ] Supporting all types of form inputs while leaving it up to developers to provide the UI for their forms.
-4. [ ] Enabling extension of form's custom validation while providing APIs and hooks for better control of form custom functionalities.
+1. [X] Taking care of all common tasks required to build a fully functional form for developers so that they don't have to do the same tasks for each form.
+2. [X] Streamlining the development of forms by making it highly configurable and extensible. 
+3. [X] Supporting all types of form inputs while leaving it up to developers to customize their form UI however they want.
+4. [X] Enabling extensions of FlexForm's functionalities so that developers can define custom functionalities required by their forms such as validation logic specific to each form.
+5. [X] Making form code modular so that form components can be maintainable and testable.
 
 
 ## Features
 
-1. [ ] **Flexibility** - FlexForm supports form development with all popular input types including text, single-select, multi-select and toggle.
-2. [ ] **Configurable** - FlexForm provides field configurations which can be used to configure how form fields function during runtime. E.g. `allowEmpty`, `minChars`, `maxChars`, `regexList`, etc.
-3. [ ] **Extensible** - FlexForm enables forms with any level of complexity from a simple Login form to forms with any number of fields.
-4. [ ] **Customization** - FlexForm enables easy and flexible integration of custom validation logic based on a form's business domain requirements.
-5. [ ] **UI-independent** - FlexForm does not dictate how forms should look and feel. Instead, it takes care all of the basic form input interaction and provides update of the form's state which be used by application at runtime to build for form.
-6. [ ] **Modular** - FlexForm's architecture enables developers to build form components that provide specific functionalities for the form based on the application's domain requirements. These components can be developed and tested independently of FlexForm. 
+1. [X] **Flexibility** - Supporting form development with all popular input types including text, single-select, multi-select and toggle.
+2. [X] **Configurable** - Providing field configurations which can be used to configure how form fields function during runtime. E.g. `allowEmpty`, `minChars`, `maxChars`, `regexList`, etc.
+3. [X] **Extensible** - Streamlining form development of any level of complexity from a simple Login form to forms with any number of fields.
+4. [X] **Customization** - Enabling customization of form logics based on business requirements with extensions of FlexForm components.
+5. [X] **UI-independent** - FlexForm does not dictate how forms should look and feel. Instead, it takes care all of the basic form input interaction and provides real-time updates of the form's state used by applications to rebuild the form.
+6. [X] **Modular** - FlexForm's architecture enables developers to separate components of a form so that they can be maintained independently. 
 
 ## Getting started
 
-FlexForm's architecture is based on the BLoC design pattern. Specifically, FlexForm depends on [bloc](https://bloclibrary.dev/) and [flutter_bloc](https://pub.dev/packages/flutter_bloc), which are very popular packages that implement BLoC and which provides a very good state management solution for Flutter applications.
+FlexForm's architecture is based on the BLoC design pattern. Specifically, FlexForm depends on [bloc](https://bloclibrary.dev/) and [flutter_bloc](https://pub.dev/packages/flutter_bloc), which are very popular packages that implement BLoC and provide a very good state management solution for Flutter applications.
 
-FlexForm supports all platforms and there's no additional setup required to get started.
+![Architecture Diagram](https://github.com/otto-viet/flex_form/blob/main/bloc_architecture.png?raw=true)
 
-To get started, simply add a dependency to `flex_form` in your Flutter application's pubspec.yaml file and you're good to go. Well, you'll still need to read a bit to learn how to use FormFlex. 
+FlexForm supports all platforms supported by Flutter. Just add a `flex_form` dependency in your Flutter project's `pubspec.yaml` and you are good to go. Well, you'll still need to read a bit to learn how to use FormFlex. 
 
 But don't worry, we will continue improving it and making it easier to use.
-
 
 ## Usage
 ### Architecture
@@ -61,12 +61,13 @@ The following components make up a Flex Form:
 9. **getValidationMessage** - A utility function for getting the validation message for an invalid FormFieldValidation.
 
 ### How to Implement a Form
-1. Extend the `FormDataEntity` class to define the data for the form and override the Equatable's `props` getter. This is required by the `FormValidationProvider` to check if the form is valid as form's inputs change. 
-2. Optionally extend the `FormValidationProvider` base class to provide custom implementations for the `isDirty`, `isValid`, `validate` and `validateUponSubmission` APIs.
-3. Implements the `FormInputDataMapper` interface to provide mapping functionalities between the form's input map and the form's `FormDataEntity`.
-4. Extends `FormBloc` and provides a constructor which crates an instance of a FormBloc with an initial `FormBlocState`, a `Map<FormFieldId, FormFieldConfig>` inputConfigMap, an instance of the extended `InputDataMapper` class, an optional `FormValidationProvider` and an optional `FormDataProvider`. 
+1. Extend the `FormDataEntity` class to define the data for the form and override the Equatable's `props` getter. This is required by the `FormValidationProvider` to check if the form is valid when the form's inputs change.
+2. Implement the `FormInputDataMapper` interface to provide mapping functionalities between the form's inputs' values and the its corresponding `FormDataEntity`.
+3. Extend the `FormBloc` class and provide a constructor which can be used by the application to create an instance of a FormBloc with an initial `FormBlocState`, a `Map<FormFieldId, FormFieldConfig>` inputConfigMap, an `InputDataMapper` instance, an optional `FormValidationProvider`, and an optional `FormDataProvider`.
+4. To implement custom validation logic, extend the `FormValidationProvider` base class and provide an instance to the `FormBloc`.
 
-To FormFlex in action, check out the `form_with_data_builder.dart` and `form_with_text_input_builder.dart` examples located in the `/example` folder. These examples demonstrate how to build a form with the `FormInputBuilder` and `FormDataBuilder` builders.
+To see FormFlex in action, check out the code examples below which use a `FormInputBuilder` (i.e. textInputBuilder) and `FormDataBuilder` (i.e. dataBuilder) respectively to build a Change Password form. 
+
 
 **Example of a form built with a TextInputBuilder**
 
@@ -107,6 +108,7 @@ To FormFlex in action, check out the `form_with_data_builder.dart` and `form_wit
       },
     )
 ```
+
 
 **Example of a form built with a DataBuilder**
 
@@ -209,7 +211,7 @@ To FormFlex in action, check out the `form_with_data_builder.dart` and `form_wit
 melos clean-build:form
 ```  
 
-2. Optionally the following commands to build each package separately.
+2. Optionally, run the following commands to build each package separately.
 
 ```
 melos build:form
@@ -219,7 +221,7 @@ melos build:form
 melos build:form-demo
 ```
 
-3. Lint the project before opening a PR by running
+3. To lint the project before opening a PR, run
 
 ```
 melos analyze
@@ -227,7 +229,7 @@ melos analyze
 
 ### How to test form changes
 
-1. Run the existing to view a demo of different form examples
+1. To view the live demo of form examples, run
 
 ```
 melos run:demo
@@ -240,7 +242,7 @@ melos run:demo
 Contribution from the community is welcomed. Please feel free to open a PR.
 
 
-## TODOs
-1. [ ] Add documentation and tutorials
+## TODOs & Roadmap
+1. [X] Add documentation and tutorials
 2. [ ] Add code generation and other tools to improve development workflow
 3. [ ] Add Tests

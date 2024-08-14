@@ -5,7 +5,10 @@ import 'text_input_theme.dart';
 
 part 'form_component_theme.freezed.dart';
 
-/// "ThemeData" class for the FormComponent Component widget.
+/// Theme data for the [FormComponent] which is used to style a form.
+/// To provide a customized look and field for a form's inputs, create an
+/// instance of this class and copy the [textInputTheme] to provide custom
+/// styles for the [textInputTheme].
 @freezed
 class FormComponentThemeData with _$FormComponentThemeData {
   const factory FormComponentThemeData({

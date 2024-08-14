@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-/// Configuration for a TextInput widget in a FormComponent.
+/// Configuration for any form field in a form.
+/// The [FormBloc] extension class must provide an instance of [FormFieldConfig]
+/// for each of the form's fields.
 class FormFieldConfig extends Equatable {
   const FormFieldConfig({
     this.minChars = 0,

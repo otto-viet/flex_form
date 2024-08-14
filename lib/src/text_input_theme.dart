@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'text_input_theme.freezed.dart';
 
+/// Theme definition used by a [TextInput] widget to style the input.
 @freezed
 class TextInputThemeData with _$TextInputThemeData {
   factory TextInputThemeData({

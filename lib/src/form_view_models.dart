@@ -22,6 +22,7 @@ class FormVM with _$FormVM {
   }) = _FormVM;
 }
 
+/// A set of [InputViewModel] classes one for each supported input type.
 @Freezed(makeCollectionsUnmodifiable: false)
 class InputViewModel with _$InputViewModel {
   const factory InputViewModel.text({
